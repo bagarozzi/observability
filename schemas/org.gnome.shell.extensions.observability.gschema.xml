@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.observability" path="/org/gnome/shell/extensions/observability/">
+    <key name="prometheus-url" type="s">
+      <default>"http://localhost:9090"</default>
+      <summary>Prometheus Server URL</summary>
+      <description>The endpoint URL or IP of your Prometheus server.</description>
+    </key>
+    <key name="poll-interval" type="i">
+        const pollInterval = this._settings.get_int('poll-interval');
+      <default>10</default>
+      <summary>Polling Interval (seconds)</summary>
+      <description>How often to fetch new data from the API.</description>
+    </key>
+  </schema>
+</schemalist>
