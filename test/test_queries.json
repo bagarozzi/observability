@@ -1,0 +1,11 @@
+{
+  "metrics": [
+    {
+      "id": "cpu_usage",
+      "label": "CPU",
+      "promql": "100 - (avg by(instance) (rate(node_cpu_seconds_total{mode='idle'}[5m])) * 100)",
+      "unit": "%",
+      "show_in_topbar": true
+    }
+  ]
+}
