@@ -39,6 +39,16 @@ export default class PrometheusPrefs extends ExtensionPreferences {
             const fileUri = this.dir.get_child('queries.json').get_uri();
             Gio.AppInfo.launch_default_for_uri(fileUri, null);
         });
+
+        const refreshButton = new Gtk.Button({
+            label: 'Refresh extension',
+            valign: Gtk.Align.CENTER,
+        });
+
+        refreshButton.connect('clicked', () => {
+            const current = settings.get_int('queries-config-version');
+            settings.set_int('queries-config-version', current + 1);
+        });
         
         fileRow.add_suffix(openButton);
         queryGroup.add(fileRow);
