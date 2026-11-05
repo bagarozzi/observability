@@ -98,12 +98,11 @@ export default class PrometheusExtension extends Extension {
             return;
         this._isUpdating = true;
 
-        let allSuccess = true;
-        const pinnedIds = new Set(); // Track which IDs should be in the topbar this cycle
-
-        this._indicator.menu.removeAll();
-
         try {
+            let allSuccess = true;
+            const pinnedIds = new Set();
+            const menuEntries = []; // Collected during fetches, applied atomically at the end
+
             for (const queryConfig of this._queries) {
                 const value = await this._api.fetchQuery(queryConfig.promql);
 
@@ -114,8 +113,8 @@ export default class PrometheusExtension extends Extension {
                 if (value === null)
                     allSuccess = false;
 
-                // Populate dropdown menu
-                this._indicator.menu.addAction(formattedText, () => {});
+                // Stage menu entry — applied after all fetches complete
+                menuEntries.push(formattedText);
 
                 // Sync topbar labels based on show_in_topbar flag
                 if (queryConfig.show_in_topbar && value !== null) {
@@ -136,6 +135,12 @@ export default class PrometheusExtension extends Extension {
                     }
                 }
             }
+
+            // All fetches done — rebuild the menu atomically so it is never
+            // left empty while awaiting network responses
+            this._indicator.menu.removeAll();
+            for (const text of menuEntries)
+                this._indicator.menu.addAction(text, () => {});
 
             // Remove labels for metrics no longer in the config or no longer show_in_topbar
             for (const id of Object.keys(this._topBarLabels)) {
