@@ -92,6 +92,11 @@ export default class PrometheusExtension extends Extension {
     }
 
     async _updateMetrics() {
+        // Prevent overlapping runs if Prometheus is slower than the poll interval
+        if (this._isUpdating)
+            return;
+        this._isUpdating = true;
+
         let allSuccess = true;
         const pinnedIds = new Set(); // Track which IDs should be in the topbar this cycle
 
