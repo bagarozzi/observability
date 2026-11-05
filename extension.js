@@ -30,6 +30,7 @@ export default class PrometheusExtension extends Extension {
 
         // Map of queryConfig.id -> St.Label currently shown in the topbar
         this._topBarLabels = {};
+        this._isUpdating = false;
 
         this._indicator.add_child(this._topBarBox);
         Main.panel.addToStatusArea(this.uuid, this._indicator);
@@ -102,53 +103,57 @@ export default class PrometheusExtension extends Extension {
 
         this._indicator.menu.removeAll();
 
-        for (const queryConfig of this._queries) {
-            const value = await this._api.fetchQuery(queryConfig.promql);
+        try {
+            for (const queryConfig of this._queries) {
+                const value = await this._api.fetchQuery(queryConfig.promql);
 
-            const formattedText = value !== null
-                ? `${queryConfig.label}: ${parseFloat(value).toFixed(2)}${queryConfig.unit}`
-                : `${queryConfig.label}: N/A`;
+                const formattedText = value !== null
+                    ? `${queryConfig.label}: ${parseFloat(value).toFixed(2)}${queryConfig.unit}`
+                    : `${queryConfig.label}: N/A`;
 
-            if (value === null)
-                allSuccess = false;
+                if (value === null)
+                    allSuccess = false;
 
-            // Populate dropdown menu
-            this._indicator.menu.addAction(formattedText, () => {});
+                // Populate dropdown menu
+                this._indicator.menu.addAction(formattedText, () => {});
 
-            // Sync topbar labels based on show_in_topbar flag
-            if (queryConfig.show_in_topbar && value !== null) {
-                pinnedIds.add(queryConfig.id);
+                // Sync topbar labels based on show_in_topbar flag
+                if (queryConfig.show_in_topbar && value !== null) {
+                    pinnedIds.add(queryConfig.id);
 
-                if (!this._topBarLabels[queryConfig.id]) {
-                    // Label doesn't exist yet — create and add it
-                    const lbl = new St.Label({
-                        text: formattedText,
-                        y_align: Clutter.ActorAlign.CENTER,
-                        style: 'margin-left: 5px; margin-right: 5px;'
-                    });
-                    this._topBarLabels[queryConfig.id] = lbl;
-                    this._topBarBox.add_child(lbl);
-                } else {
-                    // Label already exists — just update the text
-                    this._topBarLabels[queryConfig.id].set_text(formattedText);
+                    if (!this._topBarLabels[queryConfig.id]) {
+                        // Label doesn't exist yet — create and add it
+                        const lbl = new St.Label({
+                            text: formattedText,
+                            y_align: Clutter.ActorAlign.CENTER,
+                            style: 'margin-left: 5px; margin-right: 5px;'
+                        });
+                        this._topBarLabels[queryConfig.id] = lbl;
+                        this._topBarBox.add_child(lbl);
+                    } else {
+                        // Label already exists — just update the text
+                        this._topBarLabels[queryConfig.id].set_text(formattedText);
+                    }
                 }
             }
-        }
 
-        // Remove labels for metrics no longer in the config or no longer show_in_topbar
-        for (const id of Object.keys(this._topBarLabels)) {
-            if (!pinnedIds.has(id)) {
-                this._topBarBox.remove_child(this._topBarLabels[id]);
-                delete this._topBarLabels[id];
+            // Remove labels for metrics no longer in the config or no longer show_in_topbar
+            for (const id of Object.keys(this._topBarLabels)) {
+                if (!pinnedIds.has(id)) {
+                    this._topBarBox.remove_child(this._topBarLabels[id]);
+                    delete this._topBarLabels[id];
+                }
             }
-        }
 
-        // Update connection status icon
-        this._statusIcon.set_icon_name(
-            allSuccess && this._queries.length > 0
-                ? 'network-server-symbolic'
-                : 'network-error-symbolic'
-        );
+            // Update connection status icon
+            this._statusIcon.set_icon_name(
+                allSuccess && this._queries.length > 0
+                    ? 'network-server-symbolic'
+                    : 'network-error-symbolic'
+            );
+        } finally {
+            this._isUpdating = false;
+        }
     }
 
     disable() {
@@ -175,6 +180,7 @@ export default class PrometheusExtension extends Extension {
         this._topBarBox = null;
         this._statusIcon = null;
         this._topBarLabels = {};
+        this._isUpdating = false;
         this._queries = [];
         this._settings = null;
         this._api = null;
