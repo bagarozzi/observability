@@ -43,6 +43,18 @@ export default class PrometheusExtension extends Extension {
             }
         );
 
+        this._urlChangedId = this._settings.connect(
+            'changed::prometheus-url',
+            () => {
+                console.log('Prometheus URL changed, reconnecting...');
+                this._api = new PrometheusAPI(
+                    this._settings.get_string('prometheus-url'),
+                    null
+                );
+                this._restartPolling();
+            }
+        );
+
         this._configVersionChangedId = this._settings.connect(
             'changed::queries-config-version',
             this._reloadQueries.bind(this)
@@ -165,6 +177,11 @@ export default class PrometheusExtension extends Extension {
         if (this._settingsChangedId) {
             this._settings.disconnect(this._settingsChangedId);
             this._settingsChangedId = null;
+        }
+
+        if (this._urlChangedId) {
+            this._settings.disconnect(this._urlChangedId);
+            this._urlChangedId = null;
         }
 
         if (this._configVersionChangedId) {
