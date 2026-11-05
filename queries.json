@@ -2,7 +2,8 @@
   "metrics": [
     {
       "id": "cpu_usage",
-      "label": "CPU",
+      "dropdown_label": "CPU Load",
+      "topbar_label": "CPU",
       "promql": "100 - (avg by(instance) (rate(node_cpu_seconds_total{mode='idle'}[5m])) * 100)",
       "unit": "%",
       "show_in_topbar": true,
@@ -11,6 +12,7 @@
     {
       "id": "ram_free",
       "label": "RAM Free",
+      "topbar_label": "RAM",
       "promql": "node_memory_MemFree_bytes / 1024 / 1024 / 1024",
       "unit": "GB",
       "show_in_topbar": false,
