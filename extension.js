@@ -37,11 +37,12 @@ export default class PrometheusExtension extends Extension {
 
         this._settingsChangedId = this._settings.connect(
             'changed::poll-interval',
-            this._restartPolling.bind(this)
+            () => {
+                console.log('Poll interval changed, restarting loop...');
+                this._restartPolling();
+            }
         );
 
-        // When the user clicks "Reload Metrics" in prefs, re-read queries.json
-        // and restart the polling loop with the new config.
         this._configVersionChangedId = this._settings.connect(
             'changed::queries-config-version',
             this._reloadQueries.bind(this)
@@ -66,7 +67,7 @@ export default class PrometheusExtension extends Extension {
      * Re-reads the JSON config and restarts the polling loop.
      */
     async _reloadQueries() {
-        console.log('Config version changed, reloading queries.json...');
+        console.log('Queries config reloaded, restarting loop...');
         await this._loadQueries();
         this._restartPolling();
     }
@@ -88,7 +89,6 @@ export default class PrometheusExtension extends Extension {
     }
 
     _restartPolling() {
-        console.log('Poll interval changed, restarting loop...');
         this._startPolling();
     }
 
