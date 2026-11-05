@@ -118,15 +118,19 @@ export default class PrometheusExtension extends Extension {
             for (const queryConfig of this._queries) {
                 const value = await this._api.fetchQuery(queryConfig.promql);
 
-                const formattedText = value !== null
-                    ? `${queryConfig.label}: ${parseFloat(value).toFixed(2)}${queryConfig.unit}`
-                    : `${queryConfig.label}: N/A`;
+                const dropdownText = value !== null
+                    ? `${queryConfig.dropdown_label}: ${parseFloat(value).toFixed(2)}${queryConfig.unit}`
+                    : `${queryConfig.dropdown_label}: N/A`;
+
+                const topbarText = value !== null
+                    ? `${queryConfig.topbar_label}: ${parseFloat(value).toFixed(2)}${queryConfig.unit}`
+                    : `${queryConfig.topbar_label}: N/A`;
 
                 if (value === null)
                     allSuccess = false;
 
                 // Stage menu entry — applied after all fetches complete
-                menuEntries.push({ text: formattedText, success: value !== null });
+                menuEntries.push({ text: dropdownText, success: value !== null });
 
                 // Sync topbar labels based on show_in_topbar flag
                 if (queryConfig.show_in_topbar && value !== null) {
@@ -135,7 +139,7 @@ export default class PrometheusExtension extends Extension {
                     if (!this._topBarLabels[queryConfig.id]) {
                         // Label doesn't exist yet — create and add it
                         const lbl = new St.Label({
-                            text: formattedText,
+                            text: topbarText,
                             y_align: Clutter.ActorAlign.CENTER,
                             style: 'margin-left: 5px; margin-right: 5px;'
                         });
@@ -143,7 +147,7 @@ export default class PrometheusExtension extends Extension {
                         this._topBarBox.add_child(lbl);
                     } else {
                         // Label already exists — just update the text
-                        this._topBarLabels[queryConfig.id].set_text(formattedText);
+                        this._topBarLabels[queryConfig.id].set_text(topbarText);
                     }
                 }
             }
