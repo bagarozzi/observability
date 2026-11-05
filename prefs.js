@@ -29,6 +29,11 @@ export default class PrometheusPrefs extends ExtensionPreferences {
             title: 'Edit Configuration',
             subtitle: 'Manage PromQL queries and UI labels'
         });
+
+        const refreshRow = new Adw.ActionRow({
+            title: 'Refresh extension',
+            subtitle: 'Refresh the extension after modifying its configuration',
+        });
         
         const openButton = new Gtk.Button({
             label: 'Open queries.json',
@@ -41,7 +46,7 @@ export default class PrometheusPrefs extends ExtensionPreferences {
         });
 
         const refreshButton = new Gtk.Button({
-            label: 'Refresh extension',
+            label: 'Refresh',
             valign: Gtk.Align.CENTER,
         });
 
@@ -51,7 +56,9 @@ export default class PrometheusPrefs extends ExtensionPreferences {
         });
         
         fileRow.add_suffix(openButton);
+        refreshRow.add_suffix(refreshButton);
         queryGroup.add(fileRow);
+        queryGroup.add(refreshRow);
 
         window.add(page);
     }
