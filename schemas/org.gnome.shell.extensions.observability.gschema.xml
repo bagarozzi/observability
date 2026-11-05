@@ -7,10 +7,14 @@
       <description>The endpoint URL or IP of your Prometheus server.</description>
     </key>
     <key name="poll-interval" type="i">
-        const pollInterval = this._settings.get_int('poll-interval');
       <default>10</default>
       <summary>Polling Interval (seconds)</summary>
       <description>How often to fetch new data from the API.</description>
+    </key>
+    <key name="queries-config-version" type="i">
+      <default>0</default>
+      <summary>Queries Configuration Version</summary>
+      <description>Incrementing this value triggers the extension to reload queries.json.</description>
     </key>
   </schema>
 </schemalist>
