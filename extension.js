@@ -3,6 +3,7 @@ import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
+import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { ConfigLoader } from './lib/config.js';
 import { PrometheusAPI } from './lib/api.js';
@@ -157,6 +158,9 @@ export default class PrometheusExtension extends Extension {
             this._indicator.menu.removeAll();
             for (const { text, success } of menuEntries)
                 this._indicator.menu.addAction(`${success ? '🟢' : '🔴'} ${text}`, () => {});
+
+            this._indicator.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            this._indicator.menu.addAction('Preferences', () => this.openPreferences());
 
             // Remove labels for metrics no longer in the config or no longer show_in_topbar
             for (const id of Object.keys(this._topBarLabels)) {
