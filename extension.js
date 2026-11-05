@@ -114,7 +114,7 @@ export default class PrometheusExtension extends Extension {
                     allSuccess = false;
 
                 // Stage menu entry — applied after all fetches complete
-                menuEntries.push(formattedText);
+                menuEntries.push({ text: formattedText, success: value !== null });
 
                 // Sync topbar labels based on show_in_topbar flag
                 if (queryConfig.show_in_topbar && value !== null) {
@@ -139,8 +139,8 @@ export default class PrometheusExtension extends Extension {
             // All fetches done — rebuild the menu atomically so it is never
             // left empty while awaiting network responses
             this._indicator.menu.removeAll();
-            for (const text of menuEntries)
-                this._indicator.menu.addAction(text, () => {});
+            for (const { text, success } of menuEntries)
+                this._indicator.menu.addAction(`${success ? '🟢' : '🔴'} ${text}`, () => {});
 
             // Remove labels for metrics no longer in the config or no longer show_in_topbar
             for (const id of Object.keys(this._topBarLabels)) {
