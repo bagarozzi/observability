@@ -60,6 +60,21 @@ export default class PrometheusPrefs extends ExtensionPreferences {
         queryGroup.add(fileRow);
         queryGroup.add(refreshRow);
 
+        const pollingNote = new Gtk.Label({
+            label: _buildPollingNote(settings.get_int('poll-interval')),
+            css_classes: ['dim-label', 'caption'],
+            margin_top: 8,
+            margin_bottom: 8,
+        });
+        settings.connect('changed::poll-interval', () => {
+            pollingNote.set_label(_buildPollingNote(settings.get_int('poll-interval')));
+        });
+        queryGroup.add(pollingNote);
+
         window.add(page);
     }
+}
+
+function _buildPollingNote(seconds) {
+    return `Query updates may take up to ${seconds} second${seconds !== 1 ? 's' : ''} to appear after a change.`;
 }
