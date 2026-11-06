@@ -1,2 +1,9 @@
 # XML schemas
 *.compiled
+
+# JS type definitions (dev only)
+node_modules/
+package-lock.json
+
+# Ignore markdowns
+*.md
