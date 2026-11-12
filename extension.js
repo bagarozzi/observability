@@ -9,6 +9,7 @@ import { ConfigLoader } from './lib/config.js';
 import { PrometheusAPI } from './lib/api.js';
 
 export default class PrometheusExtension extends Extension {
+    
     async enable() {
         this._settings = this.getSettings();
         const prometheusUrl = this._settings.get_string('prometheus-url');
@@ -42,48 +43,28 @@ export default class PrometheusExtension extends Extension {
         this._startPolling();
     }
 
-    _connectSettings() {
-        this._settingsChangedId = this._settings.connect(
-            'changed::poll-interval',
-            () => {
-                console.log('Poll interval changed, restarting loop...');
-                this._restartPolling();
-            }
-        );
+    disable() {
+        this._disconnectSettings();
 
-        this._urlChangedId = this._settings.connect(
-            'changed::prometheus-url',
-            () => {
-                console.log('Prometheus URL changed, reconnecting...');
-                this._api.changeHostname(
-                    this._settings.get_string('prometheus-url'),
-                    null
-                );
-                this._restartPolling();
-            }
-        );
-
-        this._configVersionChangedId = this._settings.connect(
-            'changed::queries-config-version',
-            this._reloadQueries.bind(this)
-        );
-    }
-
-    _disconnectSettings() {
-        if (this._settingsChangedId) {
-            this._settings.disconnect(this._settingsChangedId);
-            this._settingsChangedId = null;
+        if (this._timeoutId) {
+            GLib.source_remove(this._timeoutId);
+            this._timeoutId = null;
         }
 
-        if (this._urlChangedId) {
-            this._settings.disconnect(this._urlChangedId);
-            this._urlChangedId = null;
+        if (this._indicator) {
+            this._indicator.destroy();
+            this._indicator = null;
         }
 
-        if (this._configVersionChangedId) {
-            this._settings.disconnect(this._configVersionChangedId);
-            this._configVersionChangedId = null;
-        }
+        this._topBarBox = null;
+        this._statusIcon = null;
+        this._topBarLabels = {};
+        this._isUpdating = false;
+        this._queries = [];
+        this._settings = null;
+        this._api.cleanup();
+        this._api = null;
+        this._configLoader = null;
     }
 
     /**
@@ -202,27 +183,47 @@ export default class PrometheusExtension extends Extension {
         }
     }
 
-    disable() {
-        this._disconnectSettings();
+    _connectSettings() {
+        this._settingsChangedId = this._settings.connect(
+            'changed::poll-interval',
+            () => {
+                console.log('Poll interval changed, restarting loop...');
+                this._restartPolling();
+            }
+        );
 
-        if (this._timeoutId) {
-            GLib.source_remove(this._timeoutId);
-            this._timeoutId = null;
+        this._urlChangedId = this._settings.connect(
+            'changed::prometheus-url',
+            () => {
+                console.log('Prometheus URL changed, reconnecting...');
+                this._api.changeHostname(
+                    this._settings.get_string('prometheus-url'),
+                    null
+                );
+                this._restartPolling();
+            }
+        );
+
+        this._configVersionChangedId = this._settings.connect(
+            'changed::queries-config-version',
+            this._reloadQueries.bind(this)
+        );
+    }
+
+    _disconnectSettings() {
+        if (this._settingsChangedId) {
+            this._settings.disconnect(this._settingsChangedId);
+            this._settingsChangedId = null;
         }
 
-        if (this._indicator) {
-            this._indicator.destroy();
-            this._indicator = null;
+        if (this._urlChangedId) {
+            this._settings.disconnect(this._urlChangedId);
+            this._urlChangedId = null;
         }
 
-        this._topBarBox = null;
-        this._statusIcon = null;
-        this._topBarLabels = {};
-        this._isUpdating = false;
-        this._queries = [];
-        this._settings = null;
-        this._api.cleanup();
-        this._api = null;
-        this._configLoader = null;
+        if (this._configVersionChangedId) {
+            this._settings.disconnect(this._configVersionChangedId);
+            this._configVersionChangedId = null;
+        }
     }
 }
