@@ -10,7 +10,7 @@ import { PrometheusAPI } from './lib/api.js';
 
 export default class PrometheusExtension extends Extension {
     async enable() {
-        this._settings = this.getSettings('org.gnome.shell.extensions.observability');
+        this._settings = this.getSettings();
         const prometheusUrl = this._settings.get_string('prometheus-url');
 
         console.log('Welcome to Observability.');
@@ -182,6 +182,9 @@ export default class PrometheusExtension extends Extension {
     }
 
     disable() {
+
+        this._api.cleanup();
+        
         if (this._settingsChangedId) {
             this._settings.disconnect(this._settingsChangedId);
             this._settingsChangedId = null;
