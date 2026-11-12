@@ -36,6 +36,13 @@ export default class PrometheusExtension extends Extension {
         this._indicator.add_child(this._topBarBox);
         Main.panel.addToStatusArea(this.uuid, this._indicator);
 
+        this._connectSettings();
+
+        await this._loadQueries();
+        this._startPolling();
+    }
+
+    _connectSettings() {
         this._settingsChangedId = this._settings.connect(
             'changed::poll-interval',
             () => {
@@ -48,7 +55,7 @@ export default class PrometheusExtension extends Extension {
             'changed::prometheus-url',
             () => {
                 console.log('Prometheus URL changed, reconnecting...');
-                this._api = new PrometheusAPI(
+                this._api.changeHostname(
                     this._settings.get_string('prometheus-url'),
                     null
                 );
@@ -60,9 +67,23 @@ export default class PrometheusExtension extends Extension {
             'changed::queries-config-version',
             this._reloadQueries.bind(this)
         );
+    }
 
-        await this._loadQueries();
-        this._startPolling();
+    _disconnectSettings() {
+        if (this._settingsChangedId) {
+            this._settings.disconnect(this._settingsChangedId);
+            this._settingsChangedId = null;
+        }
+
+        if (this._urlChangedId) {
+            this._settings.disconnect(this._urlChangedId);
+            this._urlChangedId = null;
+        }
+
+        if (this._configVersionChangedId) {
+            this._settings.disconnect(this._configVersionChangedId);
+            this._configVersionChangedId = null;
+        }
     }
 
     /**
@@ -182,23 +203,7 @@ export default class PrometheusExtension extends Extension {
     }
 
     disable() {
-
-        this._api.cleanup();
-        
-        if (this._settingsChangedId) {
-            this._settings.disconnect(this._settingsChangedId);
-            this._settingsChangedId = null;
-        }
-
-        if (this._urlChangedId) {
-            this._settings.disconnect(this._urlChangedId);
-            this._urlChangedId = null;
-        }
-
-        if (this._configVersionChangedId) {
-            this._settings.disconnect(this._configVersionChangedId);
-            this._configVersionChangedId = null;
-        }
+        this._disconnectSettings();
 
         if (this._timeoutId) {
             GLib.source_remove(this._timeoutId);
@@ -216,6 +221,7 @@ export default class PrometheusExtension extends Extension {
         this._isUpdating = false;
         this._queries = [];
         this._settings = null;
+        this._api.cleanup();
         this._api = null;
         this._configLoader = null;
     }
