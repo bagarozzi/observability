@@ -7,3 +7,5 @@ package-lock.json
 
 # Ignore markdowns
 *.md
+!README.md
+!LICENSE.md
