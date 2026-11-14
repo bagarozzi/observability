@@ -1,4 +1,4 @@
-name: Staging dispatcher
+name: Staging
 
 # Run tests on pushes to staging and pull requests to master
 on:
