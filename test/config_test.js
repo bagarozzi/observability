@@ -1,5 +1,6 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
+import System from 'system';
 import { ConfigLoader } from '../lib/config.js';
 
 async function runTest() {
@@ -12,14 +13,22 @@ async function runTest() {
     const encoder = new TextEncoder();
     testFile.replace_contents(encoder.encode(JSON.stringify(mockData)), null, false, Gio.FileCreateFlags.NONE, null);
 
-    // 2. Act - Pass the explicit file path to the new constructor
+    // 2. Act - Pass the explicit file path to the constructor
     const loader = new ConfigLoader(testFile.get_path());
     const result = await loader.loadQueries();
 
     // 3. Assert
-    console.assert(result.queries.length === 1, "Should load one query");
-    console.assert(result.queries[0].show_in_topbar === true, "Boolean flag mismatch");
-    console.log("ConfigLoader tests passed successfully.");
+    if (result.queries.length !== 1)
+        throw new Error(`Expected 1 query, got ${result.queries.length}`);
+    if (result.queries[0].show_in_topbar !== true)
+        throw new Error('Boolean flag mismatch: show_in_topbar should be true');
+
+    print('ConfigLoader tests passed successfully.');
 }
 
-runTest().catch(console.error);
+try {
+    await runTest();
+} catch (err) {
+    printerr('FAIL: ' + err);
+    System.exit(1);
+}
