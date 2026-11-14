@@ -9,6 +9,9 @@
 node_modules/
 /package-lock.json
 
+# ESLint
+.eslintcache
+
 # Python virtual environments & caches
 .venv/
 tools/.venv/
