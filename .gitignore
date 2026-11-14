@@ -1,9 +1,19 @@
+# Extension archives
+*.zip
+*.shell-extension.zip
+
 # XML schemas
 *.compiled
 
 # JS type definitions (dev only)
 node_modules/
-package-lock.json
+/package-lock.json
+
+# Python virtual environments & caches
+.venv/
+tools/.venv/
+__pycache__/
+*.py[cod]
 
 # Ignore markdowns
 *.md
