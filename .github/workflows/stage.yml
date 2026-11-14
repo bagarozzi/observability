@@ -1,0 +1,13 @@
+name: Staging Pipeline
+
+# Run tests on pushes to staging and pull requests to master
+on:
+  # comment this out if you don't want tests run at each stage
+  push:
+    branches: [ staging ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  run-tests:
+    uses: ./.github/workflows/test.yml
