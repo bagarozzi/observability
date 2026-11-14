@@ -1,10 +1,11 @@
-name: Shared Test Pipeline
+name: CI
 
 on:
   workflow_call:
 
 jobs:
-  test:
+  linter:
+    name: linter
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -17,6 +18,13 @@ jobs:
 
       - name: Run ESLint
         run: ./tools/run-eslint.sh
+
+  shexli:
+    name: shexli
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
       - name: Compile GSettings Schema
         run: glib-compile-schemas schemas/
