@@ -9,7 +9,7 @@ import { ConfigLoader } from './lib/config.js';
 import { PrometheusAPI } from './lib/api.js';
 
 export default class PrometheusExtension extends Extension {
-    
+
     async enable() {
         this._settings = this.getSettings();
         const prometheusUrl = this._settings.get_string('prometheus-url');
@@ -158,8 +158,13 @@ export default class PrometheusExtension extends Extension {
             // All fetches done — rebuild the menu atomically so it is never
             // left empty while awaiting network responses
             this._indicator.menu.removeAll();
-            for (const { text, success } of menuEntries)
-                this._indicator.menu.addAction(`${success ? '🟢' : '🔴'} ${text}`, () => {});
+            for (const { text, success } of menuEntries) {
+                const item = new PopupMenu.PopupImageMenuItem(
+                    text,
+                    success ? 'object-selected-symbolic' : 'object-stop-symbolic'
+                );
+                this._indicator.menu.addMenuItem(item);
+            }
 
             this._indicator.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this._indicator.menu.addAction('Preferences', () => this.openPreferences());
