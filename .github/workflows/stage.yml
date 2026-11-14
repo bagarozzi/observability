@@ -1,4 +1,4 @@
-name: Staging Pipeline
+name: Staging dispatcher
 
 # Run tests on pushes to staging and pull requests to master
 on:

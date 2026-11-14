@@ -1,4 +1,4 @@
-name: CI
+name: Test
 
 on:
   workflow_call:
@@ -20,7 +20,7 @@ jobs:
         run: ./tools/run-eslint.sh
 
   shexli:
-    name: shexli
+    name: shexli static analysis
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
