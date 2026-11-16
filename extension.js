@@ -53,14 +53,9 @@ export default class PrometheusExtension extends Extension {
             this._timeoutId = null;
         }
 
-        if (this._configLoader) {
-            this._configLoader.destroy();
-            this._configLoader = null;
-        }
-
-        if (this._indicator) {
-            this._indicator.destroy();
-            this._indicator = null;
+        if (this._api) {
+            this._api.cleanup();
+            this._api = null;
         }
 
         if (this._statusIcon) {
@@ -73,13 +68,20 @@ export default class PrometheusExtension extends Extension {
             this._topBarBox = null;
         }
 
+        if (this._configLoader) {
+            this._configLoader.destroy();
+            this._configLoader = null;
+        }
+
+        if (this._indicator) {
+            this._indicator.destroy();
+            this._indicator = null;
+        }
+
         this._topBarLabels = {};
         this._isUpdating = false;
         this._queries = [];
         this._settings = null;
-        this._api.cleanup();
-        this._api = null;
-        this._configLoader = null;
     }
 
     /**
@@ -122,10 +124,16 @@ export default class PrometheusExtension extends Extension {
 
             const results = await Promise.all(
                 this._queries.map(async queryConfig => {
+                    if (!this._api)
+                        return {queryConfig, value: null};
                     const value = await this._api.fetchQuery(queryConfig.promql);
                     return {queryConfig, value};
                 })
             );
+
+            // Abort if extension was disabled while awaiting network calls
+            if (!this._indicator || !this._statusIcon)
+                return;
 
             for (const {queryConfig, value} of results) {
                 const dropdownText = value !== null
