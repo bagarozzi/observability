@@ -37,6 +37,11 @@ export default class PrometheusExtension extends Extension {
         this._connectSettings();
 
         await this._loadQueries();
+        this._configLoader.startWatching(newQueries => {
+            console.log('Queries config reloaded from disk watcher, restarting loop...');
+            this._queries = newQueries;
+            this._restartPolling();
+        });
         this._startPolling();
     }
 
@@ -46,6 +51,11 @@ export default class PrometheusExtension extends Extension {
         if (this._timeoutId) {
             GLib.source_remove(this._timeoutId);
             this._timeoutId = null;
+        }
+
+        if (this._configLoader) {
+            this._configLoader.destroy();
+            this._configLoader = null;
         }
 
         if (this._indicator) {
@@ -74,22 +84,10 @@ export default class PrometheusExtension extends Extension {
 
     /**
      * Reads queries.json and stores the result in this._queries.
-     * Called once on enable() and again whenever queries-config-version changes.
      */
     async _loadQueries() {
-        this._queries = (await this._configLoader.loadQueries()).metrics || [];
+        this._queries = await this._configLoader.loadQueries();
         console.log(`Loaded ${this._queries.length} queries from configuration.`);
-    }
-
-    /**
-     * Triggered by the "Reload Metrics" button in prefs via the
-     * queries-config-version GSettings key incrementing.
-     * Re-reads the JSON config and restarts the polling loop.
-     */
-    async _reloadQueries() {
-        console.log('Queries config reloaded, restarting loop...');
-        await this._loadQueries();
-        this._restartPolling();
     }
 
     _startPolling() {
@@ -209,11 +207,6 @@ export default class PrometheusExtension extends Extension {
                 this._restartPolling();
             }
         );
-
-        this._configVersionChangedId = this._settings.connect(
-            'changed::queries-config-version',
-            this._reloadQueries.bind(this)
-        );
     }
 
     _disconnectSettings() {
@@ -225,11 +218,6 @@ export default class PrometheusExtension extends Extension {
         if (this._urlChangedId) {
             this._settings.disconnect(this._urlChangedId);
             this._urlChangedId = null;
-        }
-
-        if (this._configVersionChangedId) {
-            this._settings.disconnect(this._configVersionChangedId);
-            this._configVersionChangedId = null;
         }
     }
 }
