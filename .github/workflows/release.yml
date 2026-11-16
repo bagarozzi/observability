@@ -1,0 +1,79 @@
+name: Release Pipeline
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/test.yml
+
+  release-and-publish:
+    name: CD
+    needs: ci
+    if: success()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calculate Next GNOME Integer Version
+        id: versioning
+        run: |
+          LATEST_TAG=$(git tag -l "v*" | sort -V | tail -n 1)
+          if [ -z "$LATEST_TAG" ]; then
+            NEW_VERSION=1
+          else
+            CURRENT_VERSION=${LATEST_TAG#v}
+            NEW_VERSION=$((CURRENT_VERSION + 1))
+          fi
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update metadata.json version
+        run: |
+          jq --argjson v ${{ steps.versioning.outputs.version }} '.version = $v' metadata.json > metadata.json.tmp
+          mv metadata.json.tmp metadata.json
+
+      # - name: Package and Upload to GNOME Extensions (EGO)
+      #   id: ego
+      #   uses: murar8/gnome-extensions-action@0.1.1
+      #   with:
+      #     source-dir: .
+      #     extra-source: |
+      #       lib/
+      #       queries.json
+      #     schema: schemas/org.gnome.shell.extensions.observability.gschema.xml
+      #     username: ${{ secrets.GNOME_USERNAME }}
+      #     password: ${{ secrets.GNOME_PASSWORD }}
+      #     accept-tos: true
+
+      # TODO: Upload directly to GNOME, for now just pack and release to Github.
+      - name: Package Extension
+        id: pack
+        uses: murar8/gnome-extensions-action@0.1.1
+        with:
+          source-dir: .
+          extra-source: |
+            lib/
+            queries.json
+          schema: schemas/org.gnome.shell.extensions.observability.gschema.xml
+
+      - name: Create Git Tag
+        run: |
+          git config user.name "baginator[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag ${{ steps.versioning.outputs.tag }}
+          git push origin ${{ steps.versioning.outputs.tag }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.versioning.outputs.tag }}
+          name: Release ${{ steps.versioning.outputs.tag }}
+          files: ${{ steps.pack.outputs.zip-file }}

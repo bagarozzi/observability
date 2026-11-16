@@ -1,0 +1,63 @@
+name: Test
+
+on:
+  workflow_call:
+
+jobs:
+  linter:
+    name: linter
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run ESLint
+        run: ./tools/run-eslint.sh
+
+  shexli:
+    name: shexli static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Compile GSettings Schema
+        run: glib-compile-schemas schemas/
+
+      - name: Package Extension
+        id: pack
+        uses: murar8/gnome-extensions-action@0.1.1
+        with:
+          source-dir: .
+          extra-source: |
+            lib/
+            queries.json
+          schema: schemas/org.gnome.shell.extensions.observability.gschema.xml
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Validate Package with shexli
+        run: ./tools/run-shexli.sh --strict "${{ steps.pack.outputs.zip-file }}"
+
+  tests:
+    name: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install GJS
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gjs
+
+      - name: Run Unit Tests
+        run: gjs -m test/config_test.js

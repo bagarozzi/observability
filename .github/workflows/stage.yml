@@ -1,0 +1,11 @@
+name: Staging
+
+# Run tests on pull requests targeting staging and master
+on:
+  pull_request:
+    branches: [ staging, master ]
+
+jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/test.yml
