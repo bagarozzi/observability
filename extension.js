@@ -60,7 +60,11 @@ export default class PrometheusExtension extends Extension {
             this._statusIcon = null;
         }
 
-        this._topBarBox = null;
+        if (this._topBarBox) {
+            this._topBarBox.destroy();
+            this._topBarBox = null;
+        }
+
         this._topBarLabels = {};
         this._isUpdating = false;
         this._queries = [];
