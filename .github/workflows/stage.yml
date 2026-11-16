@@ -1,13 +1,7 @@
 name: Staging
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: true
-
-# Run tests on pushes to staging and pull requests to staging and master
+# Run tests on pull requests targeting staging and master
 on:
-  push:
-    branches: [ staging ]
   pull_request:
     branches: [ staging, master ]
 
