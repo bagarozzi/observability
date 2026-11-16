@@ -72,7 +72,7 @@ jobs:
           git push origin ${{ steps.versioning.outputs.tag }}
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.versioning.outputs.tag }}
           name: ${{ steps.versioning.outputs.tag }}
