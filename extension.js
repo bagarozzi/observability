@@ -117,9 +117,14 @@ export default class PrometheusExtension extends Extension {
             const pinnedIds = new Set();
             const menuEntries = []; // Collected during fetches, applied atomically at the end
 
-            for (const queryConfig of this._queries) {
-                const value = await this._api.fetchQuery(queryConfig.promql);
+            const results = await Promise.all(
+                this._queries.map(async queryConfig => {
+                    const value = await this._api.fetchQuery(queryConfig.promql);
+                    return {queryConfig, value};
+                })
+            );
 
+            for (const {queryConfig, value} of results) {
                 const dropdownText = value !== null
                     ? `${queryConfig.dropdown_label}: ${parseFloat(value).toFixed(2)}${queryConfig.unit}`
                     : `${queryConfig.dropdown_label}: N/A`;
