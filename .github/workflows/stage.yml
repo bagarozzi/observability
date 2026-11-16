@@ -1,11 +1,11 @@
 name: Staging
 
-# Run tests on pushes to staging and pull requests to master
+# Run tests on pushes to staging and pull requests to staging and master
 on:
   push:
     branches: [ staging ]
   pull_request:
-    branches: [ master ]
+    branches: [ staging, master ]
 
 jobs:
   ci:
