@@ -1,4 +1,5 @@
 {
+  "$schema": "./queries.schema.json",
   "metrics": [
     {
       "id": "cpu_usage",
