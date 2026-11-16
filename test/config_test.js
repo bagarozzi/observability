@@ -1,15 +1,15 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import System from 'system';
-import { ConfigLoader } from '../lib/config.js';
+import {ConfigLoader} from '../lib/config.js';
 
 async function runTest() {
     // 1. Arrange
     const testDirPath = GLib.Dir.make_tmp('prometheus-test-XXXXXX');
     const testDir = Gio.File.new_for_path(testDirPath);
     const testFile = testDir.get_child('queries.json');
-    
-    const mockData = { queries: [{ id: "test_metric", show_in_topbar: true }] };
+
+    const mockData = {queries: [{id: 'test_metric', show_in_topbar: true}]};
     const encoder = new TextEncoder();
     testFile.replace_contents(encoder.encode(JSON.stringify(mockData)), null, false, Gio.FileCreateFlags.NONE, null);
 
@@ -29,6 +29,6 @@ async function runTest() {
 try {
     await runTest();
 } catch (err) {
-    printerr('FAIL: ' + err);
+    printerr(`FAIL: ${err}`);
     System.exit(1);
 }

@@ -1,15 +1,14 @@
 import St from 'gi://St';
 import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-import { ConfigLoader } from './lib/config.js';
-import { PrometheusAPI } from './lib/api.js';
+import {ConfigLoader} from './lib/config.js';
+import {PrometheusAPI} from './lib/api.js';
 
 export default class PrometheusExtension extends Extension {
-
     async enable() {
         this._settings = this.getSettings();
         const prometheusUrl = this._settings.get_string('prometheus-url');
@@ -21,12 +20,12 @@ export default class PrometheusExtension extends Extension {
         this._queries = [];
 
         this._indicator = new PanelMenu.Button(0.0, 'Observability', false);
-        this._topBarBox = new St.BoxLayout({ vertical: false, style_class: 'panel-status-indicators-box' });
+        this._topBarBox = new St.BoxLayout({vertical: false, style_class: 'panel-status-indicators-box'});
 
         // Status icon — always visible, reflects Prometheus connection state
         this._statusIcon = new St.Icon({
             icon_name: 'network-offline-symbolic',
-            style_class: 'system-status-icon'
+            style_class: 'system-status-icon',
         });
         this._topBarBox.add_child(this._statusIcon);
 
@@ -133,7 +132,7 @@ export default class PrometheusExtension extends Extension {
                     allSuccess = false;
 
                 // Stage menu entry — applied after all fetches complete
-                menuEntries.push({ text: dropdownText, success: value !== null });
+                menuEntries.push({text: dropdownText, success: value !== null});
 
                 // Sync topbar labels based on show_in_topbar flag
                 if (queryConfig.show_in_topbar && value !== null) {
@@ -144,7 +143,7 @@ export default class PrometheusExtension extends Extension {
                         const lbl = new St.Label({
                             text: topbarText,
                             y_align: Clutter.ActorAlign.CENTER,
-                            style: 'margin-left: 5px; margin-right: 5px;'
+                            style: 'margin-left: 5px; margin-right: 5px;',
                         });
                         this._topBarLabels[queryConfig.id] = lbl;
                         this._topBarBox.add_child(lbl);
@@ -158,7 +157,7 @@ export default class PrometheusExtension extends Extension {
             // All fetches done — rebuild the menu atomically so it is never
             // left empty while awaiting network responses
             this._indicator.menu.removeAll();
-            for (const { text, success } of menuEntries) {
+            for (const {text, success} of menuEntries) {
                 const item = new PopupMenu.PopupImageMenuItem(
                     text,
                     success ? 'object-selected-symbolic' : 'object-stop-symbolic'
