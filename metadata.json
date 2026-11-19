@@ -2,7 +2,7 @@
     "uuid": "observability@bagarozzi.github.io",
     "name": "Observability",
     "description": "An observability extension enabling custom Prometheus queries to your bar.",
-    "shell-version": [ "46", "50" ],
+    "shell-version": ["50" ],
     "settings-schema": "org.gnome.shell.extensions.observability",
     "url": "https://www.github.com/bagarozzi/observability-extension",
     "version": 1,

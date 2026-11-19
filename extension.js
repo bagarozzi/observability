@@ -22,14 +22,12 @@ export default class PrometheusExtension extends Extension {
         this._indicator = new PanelMenu.Button(0.0, 'Observability', false);
         this._topBarBox = new St.BoxLayout({vertical: false, style_class: 'panel-status-indicators-box'});
 
-        // Status icon — always visible, reflects Prometheus connection state
         this._statusIcon = new St.Icon({
             icon_name: 'network-offline-symbolic',
             style_class: 'system-status-icon',
         });
         this._topBarBox.add_child(this._statusIcon);
 
-        // Map of queryConfig.id -> St.Label currently shown in the topbar
         this._topBarLabels = {};
         this._isUpdating = false;
 
@@ -102,7 +100,7 @@ export default class PrometheusExtension extends Extension {
 
         const interval = this._settings.get_int('poll-interval');
 
-        this._updateMetrics(); // Immediate first fetch
+        this._updateMetrics();
 
         this._timeoutId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, interval, () => {
             this._updateMetrics();
@@ -115,7 +113,6 @@ export default class PrometheusExtension extends Extension {
     }
 
     async _updateMetrics() {
-        // Prevent overlapping runs if Prometheus is slower than the poll interval
         if (this._isUpdating)
             return;
         this._isUpdating = true;
@@ -123,7 +120,7 @@ export default class PrometheusExtension extends Extension {
         try {
             let allSuccess = true;
             const pinnedIds = new Set();
-            const menuEntries = []; // Collected during fetches, applied atomically at the end
+            const menuEntries = [];
 
             const results = await Promise.all(
                 this._queries.map(async queryConfig => {
@@ -144,15 +141,12 @@ export default class PrometheusExtension extends Extension {
                 if (value === null)
                     allSuccess = false;
 
-                // Stage menu entry — applied after all fetches complete
                 menuEntries.push({text: dropdownText, success: value !== null});
 
-                // Sync topbar labels based on show_in_topbar flag
                 if (queryConfig.show_in_topbar && value !== null) {
                     pinnedIds.add(queryConfig.id);
 
                     if (!this._topBarLabels[queryConfig.id]) {
-                        // Label doesn't exist yet — create and add it
                         const lbl = new St.Label({
                             text: topbarText,
                             y_align: Clutter.ActorAlign.CENTER,
@@ -161,14 +155,11 @@ export default class PrometheusExtension extends Extension {
                         this._topBarLabels[queryConfig.id] = lbl;
                         this._topBarBox.add_child(lbl);
                     } else {
-                        // Label already exists — just update the text
                         this._topBarLabels[queryConfig.id].set_text(topbarText);
                     }
                 }
             }
 
-            // All fetches done — rebuild the menu atomically so it is never
-            // left empty while awaiting network responses
             this._indicator.menu.removeAll();
             for (const {text, success} of menuEntries) {
                 const item = new PopupMenu.PopupImageMenuItem(
@@ -181,7 +172,6 @@ export default class PrometheusExtension extends Extension {
             this._indicator.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this._indicator.menu.addAction('Preferences', () => this.openPreferences());
 
-            // Remove labels for metrics no longer in the config or no longer show_in_topbar
             for (const id of Object.keys(this._topBarLabels)) {
                 if (!pinnedIds.has(id)) {
                     this._topBarBox.remove_child(this._topBarLabels[id]);
@@ -189,7 +179,6 @@ export default class PrometheusExtension extends Extension {
                 }
             }
 
-            // Update connection status icon
             this._statusIcon.set_icon_name(
                 allSuccess && this._queries.length > 0
                     ? 'network-server-symbolic'
