@@ -36,7 +36,9 @@ jobs:
           source-dir: .
           extra-source: |
             lib/
+            icons/
             queries.json
+            queries.schema.json
           schema: schemas/org.gnome.shell.extensions.observability.gschema.xml
 
       - name: Set up Python
@@ -63,3 +65,4 @@ jobs:
         run: |
           gjs -m test/config_test.js
           gjs -m test/config_loader_test.js
+          gjs -m test/icon_resolver_test.js
