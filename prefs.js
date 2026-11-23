@@ -30,11 +30,6 @@ export default class PrometheusPrefs extends ExtensionPreferences {
             subtitle: 'Manage PromQL queries and UI labels',
         });
 
-        const refreshRow = new Adw.ActionRow({
-            title: 'Refresh extension',
-            subtitle: 'Refresh the extension after modifying its configuration',
-        });
-
         const openButton = new Gtk.Button({
             label: 'Open queries.json',
             valign: Gtk.Align.CENTER,
@@ -45,20 +40,8 @@ export default class PrometheusPrefs extends ExtensionPreferences {
             Gio.AppInfo.launch_default_for_uri(fileUri, null);
         });
 
-        const refreshButton = new Gtk.Button({
-            label: 'Refresh',
-            valign: Gtk.Align.CENTER,
-        });
-
-        refreshButton.connect('clicked', () => {
-            const current = settings.get_int('queries-config-version');
-            settings.set_int('queries-config-version', current + 1);
-        });
-
         fileRow.add_suffix(openButton);
-        refreshRow.add_suffix(refreshButton);
         queryGroup.add(fileRow);
-        queryGroup.add(refreshRow);
 
         const pollingNote = new Gtk.Label({
             label: _buildPollingNote(settings.get_int('poll-interval')),

@@ -60,4 +60,6 @@ jobs:
           sudo apt-get install -y gjs
 
       - name: Run Unit Tests
-        run: gjs -m test/config_test.js
+        run: |
+          gjs -m test/config_test.js
+          gjs -m test/config_loader_test.js
