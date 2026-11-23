@@ -7,6 +7,7 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {ConfigLoader} from './lib/config.js';
 import {PrometheusAPI} from './lib/api.js';
+import {IconResolver} from './lib/icons.js';
 
 export default class PrometheusExtension extends Extension {
     async enable() {
@@ -16,7 +17,8 @@ export default class PrometheusExtension extends Extension {
         console.log('Welcome to Observability.');
 
         this._api = new PrometheusAPI(prometheusUrl, null);
-        this._configLoader = new ConfigLoader(`${this.dir.get_path()}/queries.json`);
+        this._configLoader = ConfigLoader.createDefaultConfigLoader(this.dir.get_path());
+        this._iconResolver = new IconResolver(this.dir);
         this._queries = [];
 
         this._indicator = new PanelMenu.Button(0.0, 'Observability', false);
@@ -72,6 +74,8 @@ export default class PrometheusExtension extends Extension {
             this._configLoader.destroy();
             this._configLoader = null;
         }
+
+        this._iconResolver = null;
 
         if (this._indicator) {
             this._indicator.destroy();
@@ -147,7 +151,11 @@ export default class PrometheusExtension extends Extension {
                 if (value === null)
                     allSuccess = false;
 
-                menuEntries.push({text: dropdownText, success: value !== null});
+                const icon = value !== null
+                    ? this._iconResolver.getIcon(queryConfig.icon)
+                    : this._iconResolver.getErrorIcon();
+
+                menuEntries.push({text: dropdownText, icon});
 
                 if (queryConfig.show_in_topbar && value !== null) {
                     pinnedIds.add(queryConfig.id);
@@ -167,11 +175,8 @@ export default class PrometheusExtension extends Extension {
             }
 
             this._indicator.menu.removeAll();
-            for (const {text, success} of menuEntries) {
-                const item = new PopupMenu.PopupImageMenuItem(
-                    text,
-                    success ? 'object-selected-symbolic' : 'object-stop-symbolic'
-                );
+            for (const {text, icon} of menuEntries) {
+                const item = new PopupMenu.PopupImageMenuItem(text, icon);
                 this._indicator.menu.addMenuItem(item);
             }
 
