@@ -2,12 +2,19 @@ import Gio from 'gi://Gio';
 import System from 'system';
 import {ConfigLoader} from '../lib/config.js';
 
-async function runTest() {
-    const testFile = Gio.File.new_for_uri(import.meta.url)
-        .get_parent()
-        .get_child('test_queries.json');
+Gio._promisify(Gio.File.prototype, 'load_bytes_async', 'load_bytes_finish');
 
-    const loader = new ConfigLoader(testFile.get_path());
+async function runTest() {
+    const testDir = Gio.File.new_for_uri(import.meta.url)
+        .get_parent()
+        .get_path();
+
+    const loader = new ConfigLoader(
+        testDir,
+        'test_queries.json',
+        '/nonexistent/template.json',
+        '/nonexistent/schema.json'
+    );
     const result = await loader.loadQueries();
 
     if (result.length !== 1)
@@ -15,7 +22,8 @@ async function runTest() {
     if (result[0].show_in_topbar !== true)
         throw new Error('Boolean flag mismatch: show_in_topbar should be true');
 
-    print('ConfigLoader tests passed successfully.');
+    loader.destroy();
+    print('ConfigLoader smoke test passed.');
 }
 
 try {
