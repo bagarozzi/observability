@@ -54,7 +54,7 @@
           },
           "icon": {
             "type": "string",
-            "description": "Freedesktop / GNOME symbolic icon name for this metric"
+            "description": "Freedesktop / GNOME symbolic icon name for this metric. Check out 'gtk3-icon-browser' or 'gtk4-icon-browser' to get icons available in your system."
           }
         }
       }
