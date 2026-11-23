@@ -21,7 +21,7 @@ these icons' names can be used directly in the `icon` fields of the `queries.jso
 
 ### Credits
 
-The **icons** bundled with this extension are the same as in [Vitals](https://github.com/corecoding/Vitals/), follows a credit for each type of icon:
+The **icons** [bundled](./icons/) with this extension are the same as in [Vitals](https://github.com/corecoding/Vitals/), follows a credit for each type of icon:
 * (battery | storage)-symbolic.svg - from [Adwaita Icon Theme](https://gitlab.gnome.org/GNOME/adwaita-icon-theme).
 * (memory | network* | swap | system | voltage)-symbolic.svg - from [Icon Development Kit](https://gitlab.gnome.org/Teams/Design/icon-development-kit).
 * fan-symbolic.svg - inherited from [Freon](https://github.com/UshakovVasilii/gnome-shell-extension-freon) project, with mild modifications.
