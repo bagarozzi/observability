@@ -1,3 +1,5 @@
+<img src="icons/main-icon.svg" width="200px">
+
 # Observability
 [![Staging](https://github.com/bagarozzi/observability/actions/workflows/stage.yml/badge.svg?event=pull_request)](https://github.com/bagarozzi/observability/actions/workflows/stage.yml)
 
